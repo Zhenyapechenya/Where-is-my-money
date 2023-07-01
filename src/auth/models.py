@@ -10,7 +10,7 @@ metadata = MetaData()
 role = Table(
     "role",
     metadata,
-    Column("id", Integer, primary_key=True), # помечаю первичный ключ
+    Column("id", Integer, primary_key=True, autoincrement=True), # помечаю первичный ключ
     Column("salary", Float, nullable=False), # этот столбец не может быть пустым
     Column("promotion", TIMESTAMP),
 )
@@ -18,7 +18,7 @@ role = Table(
 user = Table(
     "user",
     metadata,
-    Column("id", Integer, primary_key=True), 
+    Column("id", Integer, primary_key=True, autoincrement=True), 
     Column("email", String, nullable=False), 
     # Column("username", String, nullable=False), 
     # Column("registered_at", TIMESTAMP, default=datetime.utcnow),
