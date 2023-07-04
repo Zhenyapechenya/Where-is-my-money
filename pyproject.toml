@@ -14,6 +14,7 @@ alembic = "^1.11.1"
 fastapi-users = {extras = ["sqlalchemy"], version = "^12.0.0"}
 asyncpg = "^0.27.0"
 uvicorn = "^0.22.0"
+aiosmtplib = "^2.0.2"
 
 
 [build-system]
