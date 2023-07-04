@@ -7,13 +7,6 @@ from src.database import Base
 
 metadata = MetaData()
 
-# role = Table(
-#     "role",
-#     metadata,
-#     Column("id", Integer, primary_key=True, autoincrement=True), # помечаю первичный ключ
-#     Column("salary", Float, nullable=False), # этот столбец не может быть пустым
-#     Column("promotion", TIMESTAMP),
-# )
 
 user = Table(
     "user",
@@ -29,6 +22,8 @@ user = Table(
     Column("is_verified", Boolean, default=True, nullable=False),
     Column("salary", Float), # этот столбец не может быть пустым
     Column("promotion", TIMESTAMP),  
+    Column("login_token",  String),
+    Column("token_expires", TIMESTAMP),
 )
 
 
@@ -44,3 +39,5 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     is_verified: bool = Column(Boolean, default=False, nullable=False)
     salary: float = Column(Float, nullable=False)
     promotion = Column(TIMESTAMP)
+    login_token: str = Column(String(length=50))
+    token_expires = Column(TIMESTAMP)
