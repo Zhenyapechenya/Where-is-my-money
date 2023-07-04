@@ -6,10 +6,11 @@ class UserRead(schemas.BaseUser[int]):
     # здесь нельзя выводить пароль
     id: int
     email: str
-    role_id: int
     is_active: bool = True
     is_superuser: bool = False
     is_verified: bool = False
+    salary: float
+    promotion: str
 
     class Config:
         orm_mode = True
