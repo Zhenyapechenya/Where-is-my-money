@@ -12,8 +12,8 @@ DB_PASS = os.environ.get("DB_PASS")
 
 SECRET_AUTH = os.environ.get("SECRET_AUTH")
 
-SMTP_HOST = 'smtp.yandex.ru'
-SMTP_PORT = 465
-SMTP_USERNAME = 'your_username'
-SMTP_PASSWORD = 'g5e-YG2-dpi-56d'
-SENDER_EMAIL = 'shift.test@yandex.ru'
+SMTP_HOST = os.environ.get("SMTP_HOST")
+SMTP_PORT = os.environ.get("SMTP_PORT")
+SMTP_USERNAME = os.environ.get("SMTP_USERNAME")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL")

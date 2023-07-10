@@ -1,42 +1,3 @@
-# from typing import Optional
-
-# from fastapi import Depends, Request
-# from fastapi_users import BaseUserManager, IntegerIDMixin, schemas, models, exceptions
-
-# from src.auth.utils import get_user_db
-# from src.auth.models import User
-# from src.config import SECRET_AUTH
-
-
-# class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
-#     reset_password_token_secret = SECRET_AUTH
-#     verification_token_secret = SECRET_AUTH
-#     # verification_token_lifetime_seconds: int = 60
-
-
-#     async def on_after_register(self, user: User, request: Optional[Request] = None):
-#         print(f"User {user.email} has registered.")
-
-
-#     async def on_after_forgot_password(
-#         self, user: User, token: str, request: Optional[Request] = None
-#     ):
-#         print(f"User {user.id} has forgot their password. Reset token: {token}")
-
-        
-#     async def on_after_request_verify(
-#         self, user: User, token: str, request: Optional[Request] = None
-#     ):
-#         print(f"Verification requested for user {user.email}. Verification token: {token}")
-
-
-
-
-# async def get_user_manager(user_db=Depends(get_user_db)):
-#     yield UserManager(user_db)
-
-    
-
 from typing import Optional
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -45,14 +6,19 @@ import string
 from random import choices
 from datetime import datetime, timedelta
 
+from sqlalchemy import update
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, Request, Response
 from fastapi_users import BaseUserManager, IntegerIDMixin, exceptions, models, schemas
 from pydantic import EmailStr
 
 from src.auth.models import User
+from src.auth.schemas import TokenCreate
 from src.auth.utils import get_user_db
-
 from src.config import SECRET_AUTH, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USERNAME, SENDER_EMAIL
+from src.database import get_async_session
+from src.auth.models import user
+
 
 
 def generate_token():
@@ -69,6 +35,8 @@ def send_token_email(email: EmailStr, token: str):
     message['From'] = SENDER_EMAIL
     message['To'] = str(email)
     message['Subject'] = "secret token"
+    message['List-Unsubscribe-Post'] = "List-Unsubscribe=One-Click"
+    message['List-Unsubscribe'] = "https://solarmora.com/unsubscribe/example"
     message.attach(MIMEText(token, "plain"))
 
     server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT)
@@ -77,7 +45,6 @@ def send_token_email(email: EmailStr, token: str):
     server.auth_plain()
     server.send_message(message)
     server.quit()
-
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
@@ -89,27 +56,14 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         user: User,
         request: Optional[Request] = None,
         response: Optional[Response] = None,
+        session: AsyncSession = Depends(get_async_session)
     ):
-        if user.login_token == None:
-            new_token = generate_token()
-            user.login_token = new_token["token"]
-            user.token_expires = new_token["expires"]
-            print('1 ', user.login_token, user.token_expires, user.email)
-            send_token_email(user.email, "user.login_token")
-        else:
-            if user.token_expires > datetime.utcnow():
-                # send_token_email(user.email, user.login_token)
-                print('2 ', self.login_token, user.token_expires)
-            else: 
-                new_token = generate_token()
-                user.login_token = new_token["token"]
-                user.token_expires = new_token["expires"]
-                print('3 ', self.login_token, user.token_expires)
         print(f"User {user.email} logged in.")
-
+        
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         print(f"User {user.id} has registered.")
+
 
     async def create(
         self,
@@ -130,56 +84,14 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         )
         password = user_dict.pop("password")
         user_dict["hashed_password"] = self.password_helper.hash(password)
-        user_dict["role_id"] = 1
+        # user_dict["role_id"] = 1
 
         created_user = await self.user_db.create(user_dict)
 
         await self.on_after_register(created_user, request)
-
+        send_token_email(user_dict["email"], user_dict["login_token"])
         return created_user
-
-
-    async def on_after_request_verify(
-        self, user: User, token: str, request: Optional[Request] = None
-    ):
-        print(f"Verification requested for user {user.id}. Verification token: {token}")
     
 
 async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)
-
-
-
-
-# from typing import Optional
-
-# from fastapi import Depends, Request
-# from fastapi_users import BaseUserManager, IntegerIDMixin, exceptions, models, schemas
-
-# from src.auth.models import User
-# from src.auth.utils import get_user_db
-
-# from src.config import SECRET_AUTH
-
-
-
-# class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
-#     reset_password_token_secret = SECRET_AUTH
-#     verification_token_secret = SECRET_AUTH
-
-#     async def on_after_register(self, user: User, request: Optional[Request] = None):
-#         print(f"User {user.id} has registered.")
-
-#     async def on_after_forgot_password(
-#         self, user: User, token: str, request: Optional[Request] = None
-#     ):
-#         print(f"User {user.id} has forgot their password. Reset token: {token}")
-
-#     async def on_after_request_verify(
-#         self, user: User, token: str, request: Optional[Request] = None
-#     ):
-#         print(f"Verification requested for user {user.id}. Verification token: {token}")
-
-
-# async def get_user_manager(user_db=Depends(get_user_db)):
-#     yield UserManager(user_db)

@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable
 from sqlalchemy import MetaData, Table, Column, Float, Integer, String, TIMESTAMP, ForeignKey, JSON, Boolean
 from datetime import datetime
@@ -37,7 +38,7 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     is_active: bool = Column(Boolean, default=True, nullable=False)
     is_superuser: bool = Column(Boolean, default=False, nullable=False)
     is_verified: bool = Column(Boolean, default=False, nullable=False)
-    salary: float = Column(Float, nullable=False)
-    promotion = Column(TIMESTAMP)
+    salary: Optional[Float] = Column(Float, nullable=False)
+    promotion: Optional[TIMESTAMP] = Column(TIMESTAMP)
     login_token: str = Column(String(length=50))
     token_expires = Column(TIMESTAMP)

@@ -3,8 +3,8 @@ from fastapi import FastAPI, Depends
 from src.auth.base_config import auth_backend, fastapi_users, current_user
 from src.auth.schemas import UserRead, UserCreate
 from src.auth.models import User
+from src.router import router as router_money
 
-# from operations.router import router as router_operation
 
 
 app = FastAPI(
@@ -23,7 +23,10 @@ app.include_router(
     tags=["Auth"],
 )
 
-# app.include_router(router_operation)
+
+app.include_router(router_money)
+
+
 
 @app.get("/protected-route")
 def protected_route(user: User = Depends(current_user)):
@@ -33,3 +36,4 @@ def protected_route(user: User = Depends(current_user)):
 @app.get("/unprotected-route")
 def unprotected_route():
     return f"Hello, anonym"
+
