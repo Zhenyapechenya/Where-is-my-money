@@ -6,18 +6,15 @@ import string
 from random import choices
 from datetime import datetime, timedelta
 
-from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends, Request, Response
 from fastapi_users import BaseUserManager, IntegerIDMixin, exceptions, models, schemas
 from pydantic import EmailStr
 
 from src.auth.models import User
-from src.auth.schemas import TokenCreate
 from src.auth.utils import get_user_db
 from src.config import SECRET_AUTH, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USERNAME, SENDER_EMAIL
 from src.database import get_async_session
-from src.auth.models import user
 
 
 
@@ -34,7 +31,7 @@ def send_token_email(email: EmailStr, token: str):
     message = MIMEMultipart()
     message['From'] = SENDER_EMAIL
     message['To'] = str(email)
-    message['Subject'] = "secret token"
+    message['Subject'] = "Secret token"
     message['List-Unsubscribe-Post'] = "List-Unsubscribe=One-Click"
     message['List-Unsubscribe'] = "https://solarmora.com/unsubscribe/example"
     message.attach(MIMEText(token, "plain"))
