@@ -1,7 +1,5 @@
 from typing import Optional
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import smtplib
+import smtplib, ssl
 import string
 from random import choices
 from datetime import datetime, timedelta
@@ -28,20 +26,14 @@ def generate_token():
     return token
 
 def send_token_email(email: EmailStr, token: str):
-    message = MIMEMultipart()
-    message['From'] = SENDER_EMAIL
-    message['To'] = str(email)
-    message['Subject'] = "Secret token"
-    message['List-Unsubscribe-Post'] = "List-Unsubscribe=One-Click"
-    message['List-Unsubscribe'] = "https://solarmora.com/unsubscribe/example"
-    message.attach(MIMEText(token, "plain"))
-
-    server = smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT)
-    server.ehlo(SENDER_EMAIL)
-    server.login(SENDER_EMAIL, SMTP_PASSWORD)
-    server.auth_plain()
-    server.send_message(message)
-    server.quit()
+    message = f'{token}'
+    context = ssl.create_default_context()
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+        server.ehlo()
+        server.starttls(context=context)
+        server.ehlo()
+        server.login(SENDER_EMAIL, SMTP_PASSWORD)
+        server.sendmail(SENDER_EMAIL, email, message)
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
@@ -81,12 +73,12 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         )
         password = user_dict.pop("password")
         user_dict["hashed_password"] = self.password_helper.hash(password)
-        # user_dict["role_id"] = 1
+        user_dict["promotion"] = datetime.utcnow() + timedelta(days=90)
 
         created_user = await self.user_db.create(user_dict)
 
         await self.on_after_register(created_user, request)
-        send_token_email(user_dict["email"], user_dict["login_token"])
+        
         return created_user
     
 

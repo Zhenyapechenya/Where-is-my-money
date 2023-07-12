@@ -20,6 +20,7 @@ class UserRead(BaseModel):
 class UserCreate(schemas.BaseUserCreate):
     email: str
     password: str
+    salary: float
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
